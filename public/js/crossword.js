@@ -1,11 +1,13 @@
+import deepCopy from "./deepcopy.js";
+
 /**
  * For getting questions used in crossword
  */
 let trivia = ""; //for questions
 let input_json = []; //array of question answers to generate crossword
 let xyPosition = []; //to store start point of answers (x, y) coordinates
-let acrossQue = []; //answers in across
-let downQue = []; //answers in down
+const acrossQue = []; //answers in across
+const downQue = []; //answers in down
 
 //for storing questions in trivia variable
 $.ajax({
@@ -35,7 +37,7 @@ var cols = layout.cols;
 var table = layout.table; // table as two-dimensional array
 var output_html = layout.table_string; // table as plain text (with HTML line breaks)
 var output_json = layout.result; // words along with orientation, position, startx, and starty
-
+let tableHighlight = deepCopy(table);
 /**
  * To collect x and y elements of the board and separate down and across questions
  */
@@ -56,33 +58,99 @@ output_json.forEach(function (riddle) {
   }
 });
 
+const fillHighlight = () => {
+  for (let i = 1; i <= rows; i++) {
+    for (let j = 1; j <= cols; j++) {
+      tableHighlight[i - 1][j - 1] = 0;
+    }
+  }
+  output_json.forEach(function (riddle) {
+    let x = riddle.startx;
+    let y = riddle.starty;
+    let lengthAns = riddle.answer.length;
+    let ctr = 1;
+    //let length = riddle.answer.length;
+    for (let i = 1; i <= rows; i++) {
+      for (let j = 1; j <= cols; j++) {
+        if (ctr <= lengthAns) {
+          if (j == x && i == y) {
+            if (tableHighlight[i - 1][j - 1] == 0) {
+              tableHighlight[i - 1][j - 1] = riddle.position;
+            } else {
+              tableHighlight[i - 1][j - 1] =
+                tableHighlight[i - 1][j - 1] * 10 + riddle.position;
+            }
+            if (riddle.orientation == "down") {
+              y++;
+            }
+            if (riddle.orientation == "across") {
+              x++;
+            }
+            ctr++;
+          }
+        }
+      }
+    }
+  });
+};
+
+fillHighlight();
+
 //function draw board in the page
 function drawboard(argTable) {
-  let x;
-  let y;
-  let ctr = -1;
-  for (x = 1; x <= rows; x++) {
+  for (let x = 1; x <= rows; x++) {
     $("#board").append('<div class="rowArea"></div>');
-    for (y = 1; y <= cols; y++) {
+    for (let y = 1; y <= cols; y++) {
       if (argTable[x - 1][y - 1] != "-") {
         //if condition to print row start number and col start number
         let positionNumber = returnNumber(x, y);
-        if (positionNumber < 1) {
-          $(".rowArea")
-            .last()
-            .append(
-              `<div class="boxArea enabled ans` +
-                positionNumber +
-                `"><div class="flex flex-col mb-3"><p class="mt-1"></p><p class="text-xl"></p></div></div>`
-            );
+        if (
+          tableHighlight[x - 1][y - 1] > 0 &&
+          tableHighlight[x - 1][y - 1] < 10
+        ) {
+          if (positionNumber < 1) {
+            $(".rowArea")
+              .last()
+              .append(
+                `<div class="boxArea enabled positionbox ans${
+                  tableHighlight[x - 1][y - 1]
+                }"><div class="flex flex-col mb-3"><p class="mt-1"> </p><p class="text-xl mt-4">` +
+                  argTable[x - 1][y - 1] +
+                  `</p></div></div>`
+              );
+          } else {
+            $(".rowArea")
+              .last()
+              .append(
+                `<div class="boxArea enabled positionbox ans${
+                  tableHighlight[x - 1][y - 1]
+                }"><div class="flex flex-col mb-3"><p class="">` +
+                  positionNumber +
+                  `</p><p class="text-xl">` +
+                  argTable[x - 1][y - 1] +
+                  `</p></div></div>`
+              );
+          }
         } else {
-          $(".rowArea")
-            .last()
-            .append(
-              `<div class="boxArea enabled positionbox ans"><div class="flex flex-col mb-3"><p class="mt-1">` +
-                positionNumber +
-                `</p><p class="text-xl"></p></div></div>`
-            );
+          if (positionNumber < 0) {
+            $(".rowArea")
+              .last()
+              .append(
+                `<div class="boxArea enabled positionbox ans"><div class="flex flex-col mb-3"><p class="mt-1"> </p><p class="text-xl mt-4">` +
+                  argTable[x - 1][y - 1] +
+                  `</p></div></div>`
+              );
+          } else {
+            $(".rowArea")
+              .last()
+              .append(
+                `<div class="boxArea enabled positionbox ans"><div class="flex flex-col mb-3"><p class="">` +
+                  positionNumber +
+                  `</p><p class="text-xl">` +
+                  argTable[x - 1][y - 1] +
+                  `</p></div></div>`
+              );
+          }
         }
       } else {
         $(".rowArea")
@@ -95,7 +163,7 @@ function drawboard(argTable) {
   }
 }
 
-drawboard(table, []);
+drawboard(table);
 
 //write questions
 let writeQuestion = () => {
@@ -133,6 +201,26 @@ function returnNumber(x, y) {
 }
 
 //for click event to change box and input values
-$(".positionbox").click(function (event) {
-  console.log($(event.target));
-});
+// $(".positionbox").click(function (event) {
+//   $(".ans").toggleClass("highlighted");
+// });
+
+//this one works
+//drawboard(table);
+
+function selectBox(que) {
+  let ans = ".ans" + que;
+  const boxElement = document.querySelectorAll(ans);
+  boxElement.forEach((element) => {
+    element.addEventListener("click", function () {
+      const element = document.querySelectorAll(ans);
+      element.forEach(function (ansBox) {
+        ansBox.classList.toggle("highlighted");
+      });
+    });
+  });
+}
+
+for (let i = 1; i <= 6; i++) {
+  selectBox(i);
+}
