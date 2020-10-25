@@ -3,8 +3,7 @@ module.exports = {
     // removeDeprecatedGapUtilities: true,
     // purgeLayersByDefault: true,
   },
-  purge: ["*.html"],
-  purge: ["public/js/*.js"],
+  purge: ["*.html", "public/js/*.js"],
   theme: {
     extend: {},
     height: {
