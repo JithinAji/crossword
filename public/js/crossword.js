@@ -8,6 +8,7 @@ let input_json = []; //array of question answers to generate crossword
 let xyPosition = []; //to store start point of answers (x, y) coordinates
 const acrossQue = []; //answers in across
 const downQue = []; //answers in down
+let userAnswers = [];
 
 //for storing questions in trivia variable
 $.ajax({
@@ -38,8 +39,8 @@ var table = layout.table; // table as two-dimensional array
 //var output_html = layout.table_string; // table as plain text (with HTML line breaks)
 var output_json = layout.result; // words along with orientation, position, startx, and starty
 let tableHighlight = deepCopy(table);
-/**
- * To collect x and y elements of the board and separate down and across questions
+
+/* To collect x and y elements of the board and separate down and across questions
  */
 let ctr = 0;
 
@@ -113,9 +114,7 @@ function drawboard(argTable) {
               .append(
                 `<div class="boxArea enabled positionbox ans${
                   tableHighlight[x - 1][y - 1]
-                }"><div class="flex flex-col mb-3"><p class="mt-1"> </p><p class="text-xl mt-4">` +
-                  argTable[x - 1][y - 1] +
-                  `</p></div></div>`
+                }"><div class="flex flex-col mb-3"><p class="mt-1"> </p><p class="text-xl mt-4"></p></div></div>`
               );
           } else {
             $(".rowArea")
@@ -125,9 +124,7 @@ function drawboard(argTable) {
                   tableHighlight[x - 1][y - 1]
                 }"><div class="flex flex-col mb-3"><p class="">` +
                   positionNumber +
-                  `</p><p class="text-xl">` +
-                  argTable[x - 1][y - 1] +
-                  `</p></div></div>`
+                  `</p><p class="text-xl"></p></div></div>`
               );
           }
         } else if (tableHighlight[x - 1][y - 1] > 10) {
@@ -137,9 +134,7 @@ function drawboard(argTable) {
             $(".rowArea")
               .last()
               .append(
-                `<div class="boxArea enabled positionbox ans${ans1} ans${ans2}"><div class="flex flex-col mb-3"><p class="mt-1"> </p><p class="text-xl mt-4">` +
-                  argTable[x - 1][y - 1] +
-                  `</p></div></div>`
+                `<div class="boxArea enabled positionbox ans${ans1} ans${ans2}"><div class="flex flex-col mb-3"><p class="mt-1"> </p><p class="text-xl mt-4"></p></div></div>`
               );
           } else {
             $(".rowArea")
@@ -147,9 +142,7 @@ function drawboard(argTable) {
               .append(
                 `<div class="boxArea enabled positionbox ans${ans1} ans${ans2}"><div class="flex flex-col mb-3"><p class="">` +
                   positionNumber +
-                  `</p><p class="text-xl">` +
-                  argTable[x - 1][y - 1] +
-                  `</p></div></div>`
+                  `</p><p class="text-xl"></p></div></div>`
               );
           }
         } else {
@@ -157,9 +150,7 @@ function drawboard(argTable) {
             $(".rowArea")
               .last()
               .append(
-                `<div class="boxArea enabled positionbox ans"><div class="flex flex-col mb-3"><p class="mt-1"> </p><p class="text-xl mt-4">` +
-                  argTable[x - 1][y - 1] +
-                  `</p></div></div>`
+                `<div class="boxArea enabled positionbox ans"><div class="flex flex-col mb-3"><p class="mt-1"> </p><p class="text-xl mt-4"></p></div></div>`
               );
           } else {
             $(".rowArea")
@@ -167,9 +158,7 @@ function drawboard(argTable) {
               .append(
                 `<div class="boxArea enabled positionbox ans"><div class="flex flex-col mb-3"><p class="">` +
                   positionNumber +
-                  `</p><p class="text-xl">` +
-                  argTable[x - 1][y - 1] +
-                  `</p></div></div>`
+                  `</p><p class="text-xl"></p></div></div>`
               );
           }
         }
@@ -209,7 +198,6 @@ let writeQuestion = () => {
 };
 
 writeQuestion();
-console.log(output_json);
 
 // to check if position need to be entered
 function returnNumber(x, y) {
@@ -235,25 +223,28 @@ function selectBox(que) {
       element.forEach(function (ansBox) {
         ansBox.classList.toggle("highlighted");
       });
-      editAns();
+      editAns(que);
     });
   });
 }
 
 //enable user to input in highlighted box
-const editAns = () => {
+const editAns = (que) => {
   const inputAns = document.querySelectorAll(".highlighted");
   let ctr = 0;
-  console.log(inputAns);
+  userAnswers[que] = "";
   document.onkeypress = (evt) => {
     evt = evt || window.event;
     var charCode = evt.which || evt.keyCode;
     var charStr = String.fromCharCode(charCode);
     if (/[a-z0-9]/i.test(charStr)) {
-      console.log(inputAns);
       const input = inputAns[ctr].children[inputAns[ctr].children.length - 1];
       input.children[input.children.length - 1].innerHTML = charStr;
       ctr++;
+      userAnswers[que] += charStr;
+      if (ctr > input.children.length - 1) {
+        return;
+      }
     }
   };
 };
@@ -274,6 +265,35 @@ disabled.forEach((element) => {
       element.classList.remove("highlighted");
     });
   });
+});
+
+//store correct answers in correctAns[]
+let correctAns = [];
+output_json.forEach((riddle) => {
+  correctAns[riddle.position] = riddle.answer;
+  userAnswers[riddle.position] = "";
+});
+
+const checkCorrect = () => {
+  const lengthAns = correctAns.length;
+  let youWin = true;
+  for (let i = 1; i <= lengthAns; i++) {
+    if (userAnswers[i] != undefined) {
+      if (correctAns[i].toUpperCase() != userAnswers[i].toUpperCase()) {
+        youWin = false;
+      }
+    }
+  }
+  if (youWin) {
+    alert("You Win");
+  } else {
+    alert("Try Again");
+  }
+};
+
+let verify = document.querySelector("#verify");
+verify.addEventListener("click", () => {
+  checkCorrect();
 });
 
 for (let i = 1; i <= 6; i++) {
