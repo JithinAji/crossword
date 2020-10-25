@@ -35,7 +35,7 @@ var layout = generateLayout(input_json);
 var rows = layout.rows;
 var cols = layout.cols;
 var table = layout.table; // table as two-dimensional array
-var output_html = layout.table_string; // table as plain text (with HTML line breaks)
+//var output_html = layout.table_string; // table as plain text (with HTML line breaks)
 var output_json = layout.result; // words along with orientation, position, startx, and starty
 let tableHighlight = deepCopy(table);
 /**
@@ -50,7 +50,6 @@ output_json.forEach(function (riddle) {
     number: riddle.position,
   };
   xyPosition.push(newPosition);
-  ctr++;
   if (riddle.orientation == "across") {
     acrossQue.push(riddle);
   } else if (riddle.orientation == "down") {
@@ -131,6 +130,28 @@ function drawboard(argTable) {
                   `</p></div></div>`
               );
           }
+        } else if (tableHighlight[x - 1][y - 1] > 10) {
+          let ans1 = tableHighlight[x - 1][y - 1] % 10;
+          let ans2 = Math.floor(tableHighlight[x - 1][y - 1] / 10);
+          if (positionNumber < 1) {
+            $(".rowArea")
+              .last()
+              .append(
+                `<div class="boxArea enabled positionbox ans${ans1} ans${ans2}"><div class="flex flex-col mb-3"><p class="mt-1"> </p><p class="text-xl mt-4">` +
+                  argTable[x - 1][y - 1] +
+                  `</p></div></div>`
+              );
+          } else {
+            $(".rowArea")
+              .last()
+              .append(
+                `<div class="boxArea enabled positionbox ans${ans1} ans${ans2}"><div class="flex flex-col mb-3"><p class="">` +
+                  positionNumber +
+                  `</p><p class="text-xl">` +
+                  argTable[x - 1][y - 1] +
+                  `</p></div></div>`
+              );
+          }
         } else {
           if (positionNumber < 0) {
             $(".rowArea")
@@ -188,6 +209,7 @@ let writeQuestion = () => {
 };
 
 writeQuestion();
+console.log(output_json);
 
 // to check if position need to be entered
 function returnNumber(x, y) {
@@ -200,27 +222,62 @@ function returnNumber(x, y) {
   return rtvalue;
 }
 
-//for click event to change box and input values
-// $(".positionbox").click(function (event) {
-//   $(".ans").toggleClass("highlighted");
-// });
-
 //this one works
 //drawboard(table);
 
 function selectBox(que) {
-  let ans = ".ans" + que;
+  const ans = ".ans" + que;
   const boxElement = document.querySelectorAll(ans);
   boxElement.forEach((element) => {
     element.addEventListener("click", function () {
+      removeHighlight();
       const element = document.querySelectorAll(ans);
       element.forEach(function (ansBox) {
         ansBox.classList.toggle("highlighted");
       });
+      editAns();
     });
   });
 }
 
+//enable user to input in highlighted box
+const editAns = () => {
+  const inputAns = document.querySelectorAll(".highlighted");
+  let ctr = 0;
+  console.log(inputAns);
+  document.onkeypress = (evt) => {
+    evt = evt || window.event;
+    var charCode = evt.which || evt.keyCode;
+    var charStr = String.fromCharCode(charCode);
+    if (/[a-z0-9]/i.test(charStr)) {
+      console.log(inputAns);
+      const input = inputAns[ctr].children[inputAns[ctr].children.length - 1];
+      input.children[input.children.length - 1].innerHTML = charStr;
+      ctr++;
+    }
+  };
+};
+
+function removeHighlight() {
+  const boxElement = document.querySelectorAll(".enabled");
+  boxElement.forEach((element) => {
+    element.classList.remove("highlighted");
+  });
+}
+
+//to deselect all elements when black squares are clicked
+const disabled = document.querySelectorAll(".disabled");
+disabled.forEach((element) => {
+  element.addEventListener("click", () => {
+    const boxElement = document.querySelectorAll(".enabled");
+    boxElement.forEach((element) => {
+      element.classList.remove("highlighted");
+    });
+  });
+});
+
 for (let i = 1; i <= 6; i++) {
   selectBox(i);
 }
+
+//add if across and down starts with 1 class
