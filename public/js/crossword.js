@@ -8,6 +8,7 @@ let input_json = []; //array of question answers to generate crossword
 let xyPosition = []; //to store start point of answers (x, y) coordinates
 const acrossQue = []; //answers in across
 const downQue = []; //answers in down
+let userAnswers = [];
 
 //for storing questions in trivia variable
 $.ajax({
@@ -35,11 +36,11 @@ var layout = generateLayout(input_json);
 var rows = layout.rows;
 var cols = layout.cols;
 var table = layout.table; // table as two-dimensional array
-var output_html = layout.table_string; // table as plain text (with HTML line breaks)
+//var output_html = layout.table_string; // table as plain text (with HTML line breaks)
 var output_json = layout.result; // words along with orientation, position, startx, and starty
 let tableHighlight = deepCopy(table);
-/**
- * To collect x and y elements of the board and separate down and across questions
+
+/* To collect x and y elements of the board and separate down and across questions
  */
 let ctr = 0;
 
@@ -50,7 +51,6 @@ output_json.forEach(function (riddle) {
     number: riddle.position,
   };
   xyPosition.push(newPosition);
-  ctr++;
   if (riddle.orientation == "across") {
     acrossQue.push(riddle);
   } else if (riddle.orientation == "down") {
@@ -114,9 +114,7 @@ function drawboard(argTable) {
               .append(
                 `<div class="boxArea enabled positionbox ans${
                   tableHighlight[x - 1][y - 1]
-                }"><div class="flex flex-col mb-3"><p class="mt-1"> </p><p class="text-xl mt-4">` +
-                  argTable[x - 1][y - 1] +
-                  `</p></div></div>`
+                }"><div class="flex flex-col mb-3"><p class="mt-1"> </p><p class="text-xl mt-4"></p></div></div>`
               );
           } else {
             $(".rowArea")
@@ -126,9 +124,25 @@ function drawboard(argTable) {
                   tableHighlight[x - 1][y - 1]
                 }"><div class="flex flex-col mb-3"><p class="">` +
                   positionNumber +
-                  `</p><p class="text-xl">` +
-                  argTable[x - 1][y - 1] +
-                  `</p></div></div>`
+                  `</p><p class="text-xl"></p></div></div>`
+              );
+          }
+        } else if (tableHighlight[x - 1][y - 1] > 10) {
+          let ans1 = tableHighlight[x - 1][y - 1] % 10;
+          let ans2 = Math.floor(tableHighlight[x - 1][y - 1] / 10);
+          if (positionNumber < 1) {
+            $(".rowArea")
+              .last()
+              .append(
+                `<div class="boxArea enabled positionbox ans${ans1} ans${ans2}"><div class="flex flex-col mb-3"><p class="mt-1"> </p><p class="text-xl mt-4"></p></div></div>`
+              );
+          } else {
+            $(".rowArea")
+              .last()
+              .append(
+                `<div class="boxArea enabled positionbox ans${ans1} ans${ans2}"><div class="flex flex-col mb-3"><p class="">` +
+                  positionNumber +
+                  `</p><p class="text-xl"></p></div></div>`
               );
           }
         } else {
@@ -136,9 +150,7 @@ function drawboard(argTable) {
             $(".rowArea")
               .last()
               .append(
-                `<div class="boxArea enabled positionbox ans"><div class="flex flex-col mb-3"><p class="mt-1"> </p><p class="text-xl mt-4">` +
-                  argTable[x - 1][y - 1] +
-                  `</p></div></div>`
+                `<div class="boxArea enabled positionbox ans"><div class="flex flex-col mb-3"><p class="mt-1"> </p><p class="text-xl mt-4"></p></div></div>`
               );
           } else {
             $(".rowArea")
@@ -146,9 +158,7 @@ function drawboard(argTable) {
               .append(
                 `<div class="boxArea enabled positionbox ans"><div class="flex flex-col mb-3"><p class="">` +
                   positionNumber +
-                  `</p><p class="text-xl">` +
-                  argTable[x - 1][y - 1] +
-                  `</p></div></div>`
+                  `</p><p class="text-xl"></p></div></div>`
               );
           }
         }
@@ -200,27 +210,94 @@ function returnNumber(x, y) {
   return rtvalue;
 }
 
-//for click event to change box and input values
-// $(".positionbox").click(function (event) {
-//   $(".ans").toggleClass("highlighted");
-// });
-
 //this one works
 //drawboard(table);
 
 function selectBox(que) {
-  let ans = ".ans" + que;
+  const ans = ".ans" + que;
   const boxElement = document.querySelectorAll(ans);
   boxElement.forEach((element) => {
     element.addEventListener("click", function () {
+      removeHighlight();
       const element = document.querySelectorAll(ans);
       element.forEach(function (ansBox) {
         ansBox.classList.toggle("highlighted");
       });
+      editAns(que);
     });
   });
 }
 
+//enable user to input in highlighted box
+const editAns = (que) => {
+  const inputAns = document.querySelectorAll(".highlighted");
+  let ctr = 0;
+  userAnswers[que] = "";
+  document.onkeypress = (evt) => {
+    evt = evt || window.event;
+    var charCode = evt.which || evt.keyCode;
+    var charStr = String.fromCharCode(charCode);
+    if (/[a-z0-9]/i.test(charStr)) {
+      const input = inputAns[ctr].children[inputAns[ctr].children.length - 1];
+      input.children[input.children.length - 1].innerHTML = charStr;
+      ctr++;
+      userAnswers[que] += charStr;
+      if (ctr > input.children.length - 1) {
+        return;
+      }
+    }
+  };
+};
+
+function removeHighlight() {
+  const boxElement = document.querySelectorAll(".enabled");
+  boxElement.forEach((element) => {
+    element.classList.remove("highlighted");
+  });
+}
+
+//to deselect all elements when black squares are clicked
+const disabled = document.querySelectorAll(".disabled");
+disabled.forEach((element) => {
+  element.addEventListener("click", () => {
+    const boxElement = document.querySelectorAll(".enabled");
+    boxElement.forEach((element) => {
+      element.classList.remove("highlighted");
+    });
+  });
+});
+
+//store correct answers in correctAns[]
+let correctAns = [];
+output_json.forEach((riddle) => {
+  correctAns[riddle.position] = riddle.answer;
+  userAnswers[riddle.position] = "";
+});
+
+const checkCorrect = () => {
+  const lengthAns = correctAns.length;
+  let youWin = true;
+  for (let i = 1; i <= lengthAns; i++) {
+    if (userAnswers[i] != undefined) {
+      if (correctAns[i].toUpperCase() != userAnswers[i].toUpperCase()) {
+        youWin = false;
+      }
+    }
+  }
+  if (youWin) {
+    alert("You Win");
+  } else {
+    alert("Try Again");
+  }
+};
+
+let verify = document.querySelector("#verify");
+verify.addEventListener("click", () => {
+  checkCorrect();
+});
+
 for (let i = 1; i <= 6; i++) {
   selectBox(i);
 }
+
+//add if across and down starts with 1 class
