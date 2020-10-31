@@ -9,6 +9,7 @@ let xyPosition = []; //to store start point of answers (x, y) coordinates
 const acrossQue = []; //answers in across
 const downQue = []; //answers in down
 let userAnswers = [];
+let input = document.getElementsByTagName("input");
 
 //for storing questions in trivia variable
 $.ajax({
@@ -215,6 +216,7 @@ function returnNumber(x, y) {
 
 function selectBox(que) {
   const ans = ".ans" + que;
+
   const boxElement = document.querySelectorAll(ans);
   boxElement.forEach((element) => {
     element.addEventListener("click", function () {
@@ -223,8 +225,8 @@ function selectBox(que) {
       element.forEach(function (ansBox) {
         ansBox.classList.toggle("highlighted");
       });
-      $(this).focus();
       editAns(que);
+      input.focus();
     });
   });
 }
