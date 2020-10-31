@@ -223,6 +223,7 @@ function selectBox(que) {
       element.forEach(function (ansBox) {
         ansBox.classList.toggle("highlighted");
       });
+      $(this).focus();
       editAns(que);
     });
   });
