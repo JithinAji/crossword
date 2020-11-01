@@ -9,7 +9,7 @@ let xyPosition = []; //to store start point of answers (x, y) coordinates
 const acrossQue = []; //answers in across
 const downQue = []; //answers in down
 let userAnswers = [];
-let input = document.getElementsByTagName("input");
+let input = document.querySelector(".dummyInput");
 
 //for storing questions in trivia variable
 $.ajax({
@@ -225,8 +225,8 @@ function selectBox(que) {
       element.forEach(function (ansBox) {
         ansBox.classList.toggle("highlighted");
       });
-      editAns(que);
       input.focus();
+      editAns(que);
     });
   });
 }
@@ -267,6 +267,7 @@ disabled.forEach((element) => {
     boxElement.forEach((element) => {
       element.classList.remove("highlighted");
     });
+    input.blur();
   });
 });
 
