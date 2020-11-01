@@ -100,7 +100,7 @@ fillHighlight();
 //function draw board in the page
 function drawboard(argTable) {
   for (let x = 1; x <= rows; x++) {
-    $("#board").append('<div class="rowArea"></div>');
+    $("#board").append('<div class="rowArea flex flex-no-wrap"></div>');
     for (let y = 1; y <= cols; y++) {
       if (argTable[x - 1][y - 1] != "-") {
         //if condition to print row start number and col start number
@@ -113,7 +113,7 @@ function drawboard(argTable) {
             $(".rowArea")
               .last()
               .append(
-                `<div class="boxArea enabled positionbox ans${
+                `<div class="boxArea flex flex-no-wrap enabled positionbox ans${
                   tableHighlight[x - 1][y - 1]
                 }"><div class="flex flex-col mb-3"><p class="mt-1"> </p><p class="text-xl mt-4"></p></div></div>`
               );
@@ -121,9 +121,9 @@ function drawboard(argTable) {
             $(".rowArea")
               .last()
               .append(
-                `<div class="boxArea enabled positionbox ans${
+                `<div class="boxArea flex flex-no-wrap enabled positionbox ans${
                   tableHighlight[x - 1][y - 1]
-                }"><div class="flex flex-col mb-3"><p class="">` +
+                }"><div class="mb-3"><p class="">` +
                   positionNumber +
                   `</p><p class="text-xl"></p></div></div>`
               );
@@ -135,13 +135,13 @@ function drawboard(argTable) {
             $(".rowArea")
               .last()
               .append(
-                `<div class="boxArea enabled positionbox ans${ans1} ans${ans2}"><div class="flex flex-col mb-3"><p class="mt-1"> </p><p class="text-xl mt-4"></p></div></div>`
+                `<div class="boxArea flex enabled positionbox ans${ans1} ans${ans2}"><div class="mb-3"><p class="mt-1"> </p><p class="text-xl mt-4"></p></div></div>`
               );
           } else {
             $(".rowArea")
               .last()
               .append(
-                `<div class="boxArea enabled positionbox ans${ans1} ans${ans2}"><div class="flex flex-col mb-3"><p class="">` +
+                `<div class="boxArea flex enabled positionbox ans${ans1} ans${ans2}"><div class="mb-3"><p class="">` +
                   positionNumber +
                   `</p><p class="text-xl"></p></div></div>`
               );
@@ -151,13 +151,13 @@ function drawboard(argTable) {
             $(".rowArea")
               .last()
               .append(
-                `<div class="boxArea enabled positionbox ans"><div class="flex flex-col mb-3"><p class="mt-1"> </p><p class="text-xl mt-4"></p></div></div>`
+                `<div class="boxArea flex flex-col enabled positionbox ans"><div class="mb-3"><p class="mt-1"> </p><p class="text-xl mt-4"></p></div></div>`
               );
           } else {
             $(".rowArea")
               .last()
               .append(
-                `<div class="boxArea enabled positionbox ans"><div class="flex flex-col mb-3"><p class="">` +
+                `<div class="boxArea flex flex-col enabled positionbox ans"><div class="mb-3"><p class="">` +
                   positionNumber +
                   `</p><p class="text-xl"></p></div></div>`
               );
@@ -167,7 +167,7 @@ function drawboard(argTable) {
         $(".rowArea")
           .last()
           .append(
-            `<div class="boxArea disabled"><div class="flex flex-col mb-3"><p class="mt-1"></p><p class="text-xl"></p></div></div>`
+            `<div class="boxArea flex flex-col disabled"><div class="mb-3"><p class="mt-1"></p><p class="text-xl"></p></div></div>`
           );
       }
     }
