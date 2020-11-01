@@ -256,6 +256,7 @@ function removeHighlight() {
   const boxElement = document.querySelectorAll(".enabled");
   boxElement.forEach((element) => {
     element.classList.remove("highlighted");
+    //console.log("%c" + evt, "background: #222; color: #bada55");
   });
 }
 
@@ -268,6 +269,7 @@ disabled.forEach((element) => {
       element.classList.remove("highlighted");
     });
     input.blur();
+    document.removeEventListener("onkeypress", this, false);
   });
 });
 
