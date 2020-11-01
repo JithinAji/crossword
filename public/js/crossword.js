@@ -226,13 +226,13 @@ function selectBox(que) {
         ansBox.classList.toggle("highlighted");
       });
       input.focus();
-      editAns(que);
+      editAns(que, true);
     });
   });
 }
 
 //enable user to input in highlighted box
-const editAns = (que) => {
+const editAns = (que, run) => {
   const inputAns = document.querySelectorAll(".highlighted");
   let ctr = 0;
   userAnswers[que] = "";
@@ -245,6 +245,7 @@ const editAns = (que) => {
       input.children[input.children.length - 1].innerHTML = charStr;
       ctr++;
       userAnswers[que] += charStr;
+      console.table([que, run]);
       if (ctr > input.children.length - 1) {
         return;
       }
@@ -269,7 +270,7 @@ disabled.forEach((element) => {
       element.classList.remove("highlighted");
     });
     input.blur();
-    document.removeEventListener("onkeypress", this, false);
+    editAns(10, true);
   });
 });
 
